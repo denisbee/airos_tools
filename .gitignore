@@ -1,0 +1,5 @@
+*
+!setup.py
+!airos_tasks/*
+!.gitignore
+!README.md
