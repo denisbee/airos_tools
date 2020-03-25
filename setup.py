@@ -4,12 +4,12 @@ with open("README.md", "r") as fh:
       long_description = fh.read()
 
 setup(
-      name='airos_tasks',
+      name='airos_tools',
       version='0.1',
       description='Ubiquti AirOS SSH helper',
       author='Denis Bezrodnykh',
       author_email='denis.bee@gmail.com',
-      url='https://github.com/denisbee/airos-tasks',
+      url='https://github.com/denisbee/airos_tools',
       python_requires='>=3.5',
       packages=find_packages(),
       long_description=long_description,
