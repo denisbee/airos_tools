@@ -67,12 +67,12 @@ class AirOS(paramiko.SSHClient):
         self.connect(hostname=hostname, username=user, password=password, timeout=30)
 
     def json_output(self, command: str) -> Union[Dict, List]:
-        _stdin, stdout, _stderr = self.exec_command(command)
+        _stdin, stdout, _stderr = self.exec_command(command, timeout=20)
         return json.load(stdout, object_hook=lambda dct: DictX(dct))
 
     @cached_property
     def config(self) -> Config:
-        _stdin, stdout, _stderr = self.exec_command('sort /tmp/system.cfg')
+        _stdin, stdout, _stderr = self.exec_command('sort /tmp/system.cfg', timeout=20)
         return Config(
             {kv[0]: kv[1] for kv in map(lambda e: e.strip('\r\n').split('=', 1), stdout.readlines())})
 
@@ -85,11 +85,11 @@ class AirOS(paramiko.SSHClient):
         # No sftp in dropbear
         # with self.open_sftp() as sftp:
             # sftp.put(local_path, '/tmp/fwupdate.bin')
-        stdin, _stdout, _stderr = self.exec_command('uudecode -o /tmp/fwupdate.bin')
+        stdin, _stdout, _stderr = self.exec_command('uudecode -o /tmp/fwupdate.bin', timeout=240)
         uu.encode(local_path, stdin, backtick=True)
         stdin.flush()
         stdin.close()
-        self.exec_command('/sbin/fwupdate -m')
+        self.exec_command('/sbin/fwupdate -m', timeout=20)
 
     @cached_property_with_ttl(ttl=5)
     def status(self) -> Union[Dict, List]:
@@ -109,7 +109,7 @@ class AirOS(paramiko.SSHClient):
 
     @cached_property_with_ttl(ttl=5)
     def mcastatus(self) -> Dict[str, str]:
-        _stdin, stdout, _stderr = self.exec_command('ubntbox mca-status')
+        _stdin, stdout, _stderr = self.exec_command('ubntbox mca-status', timeout=20)
         return {
             k: v
             for [k, v] in
@@ -127,12 +127,12 @@ class AirOS(paramiko.SSHClient):
         "Save changed config to /tmp/system.cfg and write it to flash"
         self.save_candidate()
         _stdin, stdout, stderr = self.exec_command(
-            'test -f /tmp/candidate.cfg && mv /tmp/candidate.cfg /tmp/system.cfg && cfgmtd -w -p /etc/ 2>&1')
+            'test -f /tmp/candidate.cfg && mv /tmp/candidate.cfg /tmp/system.cfg && cfgmtd -w -p /etc/ 2>&1', timeout=20)
         return stdout.read().decode('UTF-8')
 
     def save_candidate(self) -> None:
         "Dump candidate config (self.config property) to /tmp/candidate.cfg"
-        stdin, stdout, _stderr = self.exec_command('sort > /tmp/candidate.cfg')
+        stdin, stdout, _stderr = self.exec_command('sort > /tmp/candidate.cfg', timeout=20)
         stdin.write(str(self.config))
         stdin.flush()
         stdin.channel.close()
@@ -142,11 +142,11 @@ class AirOS(paramiko.SSHClient):
         self.save_candidate()
         # _stdin, stdout, _stderr = self.exec_command('test -f /tmp/candidate.cfg && sort /tmp/system.cfg | diff -U0 - /tmp/candidate.cfg')
         _stdin, stdout, _stderr = self.exec_command(
-            'sort /tmp/system.cfg > /tmp/system.cfg.sorted; test -f /tmp/candidate.cfg && diff -U0 /tmp/system.cfg.sorted /tmp/candidate.cfg')
+            'sort /tmp/system.cfg > /tmp/system.cfg.sorted; test -f /tmp/candidate.cfg && diff -U0 /tmp/system.cfg.sorted /tmp/candidate.cfg', timeout=20)
         return stdout.read().decode('UTF-8')
 
     def reboot(self) -> None:
-        self.exec_command('sync; reboot')
+        self.exec_command('sync; reboot', timeout=20)
 
     def is_station(self) -> bool:
         return self.config['radio.1.mode'] == 'managed' # type: ignore
