@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
       name='airos_tools',
-      version='0.1',
+      version='0.2',
       description='Ubiquti AirOS SSH helper',
       author='Denis Bezrodnykh',
       author_email='denis.bee@gmail.com',

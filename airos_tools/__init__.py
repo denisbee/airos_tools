@@ -64,7 +64,7 @@ class AirOS(paramiko.SSHClient):
         super(AirOS, self).__init__()
         # self.load_system_host_keys()
         self.set_missing_host_key_policy(paramiko.AutoAddPolicy)
-        self.connect(hostname=hostname, username=user, password=password, timeout=30)
+        self.connect(hostname=hostname, username=user, password=password, timeout=30, banner_timeout=30, auth_timeout=30)
 
     def json_output(self, command: str) -> Union[Dict, List]:
         _stdin, stdout, _stderr = self.exec_command(command, timeout=20)
@@ -72,7 +72,7 @@ class AirOS(paramiko.SSHClient):
 
     @cached_property
     def config(self) -> Config:
-        _stdin, stdout, _stderr = self.exec_command('sort /tmp/system.cfg', timeout=20)
+        _stdin, stdout, _stderr = self.exec_command('sort /tmp/system.cfg', timeout=30)
         return Config(
             {kv[0]: kv[1] for kv in map(lambda e: e.strip('\r\n').split('=', 1), stdout.readlines())})
 
