@@ -14,5 +14,5 @@ setup(
       packages=find_packages(),
       long_description=long_description,
       long_description_content_type="text/markdown",
-      install_requires=[ 'paramiko~>2.10.1', 'cached_property~=1.5' ]
+      install_requires=[ 'paramiko>=2.10.1', 'cached_property>=1.5' ]
 )
